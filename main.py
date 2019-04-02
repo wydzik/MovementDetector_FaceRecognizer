@@ -1,12 +1,9 @@
 import cv2
 import numpy as np
 
-
 face_cascade = cv2.CascadeClassifier ( 'haarcascade_frontalface_default.xml' )
 
 capture =  cv2.VideoCapture(0)
-
-
 
 img_counter = 0;
 

@@ -46,24 +46,26 @@ while(True):
         # dodanie załącznika
 
         if img_counter > 0 :
+            with open("test_{}.jpg".format(img_counter - 1), 'rb') as f:
+                file_data = f.read()
+                file_type = imghdr.what(f.name)
+                file_name = f.name
 
-        with open("test_{}.jpg".format(img_counter-1), 'rb') as f:
-            file_data = f.read()
-            file_type = imghdr.what(f.name)
-            file_name = f.name
+            msg.add_attachment(file_data, maintype='image', subtype=file_type, filename=file_name)
 
-        msg.add_attachment(file_data, maintype='image', subtype=file_type, filename=file_name)
+            # wysyłanie wiaomości
+            # with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
 
-        # wysyłanie wiaomości
-        #with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
+            with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+                smtp.ehlo()
+                smtp.starttls()
+                smtp.ehlo()
+                smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
+                smtp.send_message(msg)
+                smtp.quit()
 
-        with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.ehlo()
-            smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
-            smtp.send_message(msg)
-            smtp.quit()
+
+
 
     for(x, y, w, h) in faces:   #pętla do wyświetlania figury na twarzy
         cv2.rectangle(frame, (x,y), (x+w, y+h), (255,0,0), 2)

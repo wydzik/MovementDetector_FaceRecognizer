@@ -83,18 +83,23 @@ while True:
 
 	k = cv2.waitKey(1)
 
-	if k % 256 == 32:  # jeżeli kliknięty klawisz to spacja
-		img_name = "Snapshot_{}.jpg".format(img_counter)  # nazwanie naszego snapshota
-		# format nie ma znaczenia - moze byc dowolny
-		cv2.imwrite(img_name, frame)  # zapisanie
-		print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
+	if k % 256 == 32: # jeżeli kliknięty klawisz to spacja
+			localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
+			#img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
+			img_name = "Snapshot_{}.jpg".format(img_counter)
+			#print(img_name)
+			# format nie ma znaczenia - moze byc dowolny
+			cv2.imwrite(img_name, frame) # zapisanie
+			print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
+			img_counter += 1  # licznik do nazwy
 
-		img_counter += 1  # licznik do nazwy
+
+
 	if k % 256 == 27:
 		# dodanie załącznika
 
 		if img_counter > 0:
-			with open("test_{}.jpg".format(img_counter - 1), 'rb') as f:
+			with open("Snapshot_{}.jpg".format(img_counter - 1), 'rb') as f:
 				file_data = f.read()
 				file_type = imghdr.what(f.name)
 				file_name = f.name

@@ -4,7 +4,11 @@
 # import the necessary packages
 from imutils.video import VideoStream
 from imutils.video import FPS
+from email.message import EmailMessage
+import Contact_details as cd
 import numpy as np
+import smtplib
+import imghdr
 import argparse
 import imutils
 import pickle
@@ -48,6 +52,13 @@ time.sleep(2.0)
 
 # start the FPS throughput estimator
 fps = FPS().start()
+img_counter = 0; #licznik do numerowania snapshotów
+msg = EmailMessage()
+msg['Subject'] = 'Nieautoryzowany dostep do urzadzenia!'
+msg['From'] = cd.EMAIL_SENDER
+msg['To'] = cd.EMAIL_RECEIVER
+msg.set_content('Kamera wykryla ruch przy Twoim stanowisku, w zalaczniku przesylamy Snapshota z tej sesji.\nZachowaj ostroznosc i zabezpiecz stanowisko.')
+
 
 # loop over frames from the video file stream
 while True:
@@ -69,6 +80,37 @@ while True:
 	# faces in the input image
 	detector.setInput(imageBlob)
 	detections = detector.forward()
+
+	k = cv2.waitKey(1)
+
+	if k % 256 == 32:  # jeżeli kliknięty klawisz to spacja
+		img_name = "Snapshot_{}.jpg".format(img_counter)  # nazwanie naszego snapshota
+		# format nie ma znaczenia - moze byc dowolny
+		cv2.imwrite(img_name, frame)  # zapisanie
+		print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
+
+		img_counter += 1  # licznik do nazwy
+	if k % 256 == 27:
+		# dodanie załącznika
+
+		if img_counter > 0:
+			with open("test_{}.jpg".format(img_counter - 1), 'rb') as f:
+				file_data = f.read()
+				file_type = imghdr.what(f.name)
+				file_name = f.name
+
+			msg.add_attachment(file_data, maintype='image', subtype=file_type, filename=file_name)
+
+			# wysyłanie wiaomości
+			# with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
+
+			with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+				smtp.ehlo()
+				smtp.starttls()
+				smtp.ehlo()
+				smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
+				smtp.send_message(msg)
+				smtp.quit()
 
 	# loop over the detections
 	for i in range(0, detections.shape[2]):

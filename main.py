@@ -36,7 +36,7 @@ while(True):
 
     if k%256 == 32:         #jeżeli kliknięty klawisz to spacja
         img_name = "test_{}.jpg".format(img_counter) #nazwanie naszego snapshota
-                                                    #format nie ma znaczenia - moze byc dowolny 
+                                                    #format nie ma znaczenia - moze byc dowolny
         cv2.imwrite(img_name, frame) #zapisanie
         print("{} written!".format(img_name)) #potwierdza że Snapshot został wykonany i zapisany
 

@@ -58,7 +58,7 @@ msg['Subject'] = 'Nieautoryzowany dostep do urzadzenia!'
 msg['From'] = cd.EMAIL_SENDER
 msg['To'] = cd.EMAIL_RECEIVER
 msg.set_content('Kamera wykryla ruch przy Twoim stanowisku, w zalaczniku przesylamy Snapshota z tej sesji.\nZachowaj ostroznosc i zabezpiecz stanowisko.')
-
+localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
 
 # loop over frames from the video file stream
 while True:
@@ -85,8 +85,8 @@ while True:
 
 	if k % 256 == 32: # jeżeli kliknięty klawisz to spacja
 			localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
-			#img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
-			img_name = "Snapshot_{}.jpg".format(img_counter)
+			img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
+			#img_name = "Snapshot_{}.jpg".format(img_counter)
 			#print(img_name)
 			# format nie ma znaczenia - moze byc dowolny
 			cv2.imwrite(img_name, frame) # zapisanie
@@ -97,9 +97,9 @@ while True:
 
 	if k % 256 == 27:
 		# dodanie załącznika
-
+		new_string = str(img_counter-1)+"_"+str(localtime)
 		if img_counter > 0:
-			with open("Snapshot_{}.jpg".format(img_counter - 1), 'rb') as f:
+			with open("Snapshot_{}.jpg".format(new_string), 'rb') as f:
 				file_data = f.read()
 				file_type = imghdr.what(f.name)
 				file_name = f.name

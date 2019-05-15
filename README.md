@@ -1,6 +1,12 @@
 # MovementDetector_FaceRecognizer
 
-Wywolac w konsoli kolejno:
+1. Importy
+- pip install opencv-python
+- pip install imutils
+
+2. Dodać do katalogu 'dataset' podkatalog ze zdjęciami osoby, którą ma rozpoznawać system, nazwać katalog jej imieniem.
+
+3. Wywołać w konsoli kolejno:
 
 - python extract_embeddings.py --dataset dataset --embeddings output/embeddings.pickle --detector face_detection_model --embedding-model openface_nn4.small2.v1.t7
 

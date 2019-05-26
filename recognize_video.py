@@ -60,6 +60,10 @@ msg['To'] = cd.EMAIL_RECEIVER
 msg.set_content('Kamera wykryla ruch przy Twoim stanowisku, w zalaczniku przesylamy Snapshota z tej sesji.\nZachowaj ostroznosc i zabezpiecz stanowisko.')
 localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
 
+czy_rozpoznano = 1
+czas_od_wyslania = 1
+start = 0
+
 # loop over frames from the video file stream
 while True:
 	# grab the frame from the threaded video stream
@@ -152,6 +156,7 @@ while True:
 			proba = preds[j]
 			name = le.classes_[j]
 
+
 			# draw the bounding box of the face along with the
 			# associated probability
 			text = "{}: {:.2f}%".format(name, proba * 100)
@@ -165,12 +170,65 @@ while True:
 	fps.update()
 
 	# show the output frame
-	cv2.imshow("Frame", frame)
+	cv2.imshow("MovementFetector_FaceRecognizer", frame)
 	key = cv2.waitKey(1) & 0xFF
 
+
+
+
+	if name != "unknown" :
+		czy_rozpoznano = 1
+
+	if name == "unknown":
+		if start == 0 :
+			start = time.time()
+
+	if time.time() - start > 30  and start > 0 :
+			czy_rozpoznano = 0
+
+
+	if czas_od_wyslania == 0 :
+		if czy_rozpoznano == 0 :
+			print("Wysylam wiadomosc")
+			czas_od_wyslania = time.time()
+
+			localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
+			img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
+			# img_name = "Snapshot_{}.jpg".format(img_counter)
+			# print(img_name)
+			# format nie ma znaczenia - moze byc dowolny
+			cv2.imwrite(img_name, frame)  # zapisanie
+			print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
+			img_counter += 1  # licznik do nazwy
+			new_string = str(img_counter - 1) + "_" + str(localtime)
+			if img_counter > 0:
+				with open("Snapshot_{}.jpg".format(new_string), 'rb') as f:
+					file_data = f.read()
+					file_type = imghdr.what(f.name)
+					file_name = f.name
+
+				msg.add_attachment(file_data, maintype='image', subtype=file_type, filename=file_name)
+
+				# wysyłanie wiaomości
+				# with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
+
+				with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+					smtp.ehlo()
+					smtp.starttls()
+					smtp.ehlo()
+					smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
+					smtp.send_message(msg)
+					smtp.quit()
+
+	if time.time() - czas_od_wyslania > 100000:
+		czas_od_wyslania = 0;
+
 	# if the `q` key was pressed, break from the loop
-	if key == ord("q"):
+	if k == ord("q"):
 		break
+
+
+
 
 # stop the timer and display FPS information
 fps.stop()

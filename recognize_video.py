@@ -14,6 +14,8 @@ import imutils
 import pickle
 import time
 import cv2
+from tkinter import filedialog
+from tkinter import *
 import os
 
 # construct the argument parser and parse the arguments
@@ -64,6 +66,21 @@ czy_rozpoznano = 1
 czas_od_wyslania = 1
 start = 0
 
+
+def save_it(img_name, frame):
+	main = Tk()
+	filename = filedialog.asksaveasfilename(initialdir = "/",
+											title = "Select file",
+											filetypes = (("jpeg files","*.jpg"),("all files","*.*")))
+	if filename:
+		filename_str = str(filename) + ".jpg"
+		print(filename)  # test
+		cv2.imwrite(filename_str, frame)
+		main.destroy()
+	else:
+		main.destroy()
+
+name = " "
 # loop over frames from the video file stream
 while True:
 	# grab the frame from the threaded video stream
@@ -95,7 +112,8 @@ while True:
 			# format nie ma znaczenia - moze byc dowolny
 			cv2.imwrite(img_name, frame) # zapisanie
 			print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
-			img_counter += 1  # licznik do nazwy
+			img_counter += 1  # licznik do
+			save_it(img_name,frame)
 
 
 

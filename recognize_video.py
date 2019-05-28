@@ -69,9 +69,9 @@ start = 0
 
 def save_it(img_name, frame):
 	main = Tk()
-	filename = filedialog.asksaveasfilename(initialdir = "/",
-											title = "Select file",
-											filetypes = (("jpeg files","*.jpg"),("all files","*.*")))
+	filename = filedialog.asksaveasfilename(initialdir="/",
+											title="Select file",
+											filetypes=(("jpeg files", "*.jpg"), ("all files", "*.*")))
 	if filename:
 		filename_str = str(filename) + ".jpg"
 		print(filename)  # test
@@ -173,7 +173,8 @@ while True:
 			j = np.argmax(preds)
 			proba = preds[j]
 			name = le.classes_[j]
-
+			if proba < 0.5:
+				name = "unknown"
 
 			# draw the bounding box of the face along with the
 			# associated probability
@@ -196,6 +197,7 @@ while True:
 
 	if name != "unknown" :
 		czy_rozpoznano = 1
+		start = 0
 
 	if name == "unknown":
 		if start == 0 :

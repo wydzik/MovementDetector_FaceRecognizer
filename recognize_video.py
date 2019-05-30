@@ -130,7 +130,6 @@ while True:
 
 			# wysyłanie wiaomości
 			# with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
-
 			with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
 				smtp.ehlo()
 				smtp.starttls()
@@ -173,12 +172,15 @@ while True:
 			j = np.argmax(preds)
 			proba = preds[j]
 			name = le.classes_[j]
-			if proba < 0.5:
+			if proba < 0.45:
 				name = "unknown"
 
 			# draw the bounding box of the face along with the
 			# associated probability
-			text = "{}: {:.2f}%".format(name, proba * 100)
+			if name != "unknown":
+				text = "{}: {:.2f}%".format(name, proba * 100)
+			if name =="unknown":
+				text = "{}".format(name)
 			y = startY - 10 if startY - 10 > 10 else startY + 10
 			cv2.rectangle(frame, (startX, startY), (endX, endY),
 				(0, 0, 255), 2)
@@ -231,15 +233,16 @@ while True:
 
 				# wysyłanie wiaomości
 				# with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
-
-				with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-					smtp.ehlo()
-					smtp.starttls()
-					smtp.ehlo()
-					smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
-					smtp.send_message(msg)
-					smtp.quit()
-
+				try:
+					with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+						smtp.ehlo()
+						smtp.starttls()
+						smtp.ehlo()
+						smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
+						smtp.send_message(msg)
+						smtp.quit()
+				except:
+					print("Mail nie został wysłany")
 	if time.time() - czas_od_wyslania > 100000:
 		czas_od_wyslania = 0;
 

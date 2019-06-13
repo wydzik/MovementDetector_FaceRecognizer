@@ -67,7 +67,7 @@ czas_od_wyslania = 1
 start = 0
 
 
-def save_it(img_name, frame):
+def save_it(frame):
 	main = Tk()
 	filename = filedialog.asksaveasfilename(initialdir="/",
 											title="Select file",
@@ -123,13 +123,8 @@ while True:
 	k = cv2.waitKey(1)
 
 	if k % 256 == 32:  # jeżeli kliknięty klawisz to spacja
-			localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
-			img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
-			# format nie ma znaczenia - moze byc dowolny
-			cv2.imwrite(img_name, frame) # zapisanie
-			print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
-			img_counter += 1  # licznik do
-			save_it(img_name,frame)
+			make_screenshoot(img_counter,frame)
+			save_it(frame)
 
 
 

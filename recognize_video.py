@@ -80,6 +80,24 @@ def save_it(img_name, frame):
 	else:
 		main.destroy()
 
+def send_mail(smtp,msg):
+	smtp.ehlo()
+	smtp.starttls()
+	smtp.ehlo()
+	smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
+	smtp.send_message(msg)
+	smtp.quit()
+
+def make_screenshoot(img_counter,frame):
+	localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
+	img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
+	# img_name = "Snapshot_{}.jpg".format(img_counter)
+	# print(img_name)
+	# format nie ma znaczenia - moze byc dowolny
+	cv2.imwrite(img_name, frame)  # zapisanie
+	print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
+	img_counter += 1  # licznik do nazwy
+
 name = " "
 # loop over frames from the video file stream
 while True:
@@ -104,11 +122,9 @@ while True:
 
 	k = cv2.waitKey(1)
 
-	if k % 256 == 32: # jeżeli kliknięty klawisz to spacja
+	if k % 256 == 32:  # jeżeli kliknięty klawisz to spacja
 			localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
 			img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
-			#img_name = "Snapshot_{}.jpg".format(img_counter)
-			#print(img_name)
 			# format nie ma znaczenia - moze byc dowolny
 			cv2.imwrite(img_name, frame) # zapisanie
 			print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
@@ -131,12 +147,7 @@ while True:
 			# wysyłanie wiaomości
 			# with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
 			with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-				smtp.ehlo()
-				smtp.starttls()
-				smtp.ehlo()
-				smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
-				smtp.send_message(msg)
-				smtp.quit()
+				send_mail(smtp,msg)
 
 	# loop over the detections
 	for i in range(0, detections.shape[2]):
@@ -194,9 +205,6 @@ while True:
 	cv2.imshow("MovementFetector_FaceRecognizer", frame)
 	key = cv2.waitKey(1) & 0xFF
 
-
-
-
 	if name != "unknown" :
 		czy_rozpoznano = 1
 		start = 0
@@ -214,14 +222,7 @@ while True:
 			print("Wysylam wiadomosc")
 			czas_od_wyslania = time.time()
 
-			localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
-			img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
-			# img_name = "Snapshot_{}.jpg".format(img_counter)
-			# print(img_name)
-			# format nie ma znaczenia - moze byc dowolny
-			cv2.imwrite(img_name, frame)  # zapisanie
-			print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
-			img_counter += 1  # licznik do nazwy
+			make_screenshoot(img_counter, frame)
 			new_string = str(img_counter - 1) + "_" + str(localtime)
 			if img_counter > 0:
 				with open("Snapshot_{}.jpg".format(new_string), 'rb') as f:
@@ -235,12 +236,7 @@ while True:
 				# with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
 				try:
 					with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-						smtp.ehlo()
-						smtp.starttls()
-						smtp.ehlo()
-						smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
-						smtp.send_message(msg)
-						smtp.quit()
+						send_mail(smtp,msg)
 				except:
 					print("Mail nie został wysłany")
 	if time.time() - czas_od_wyslania > 100000:

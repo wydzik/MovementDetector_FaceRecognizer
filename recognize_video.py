@@ -65,6 +65,7 @@ localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
 czy_rozpoznano = 1
 czas_od_wyslania = 1
 start = 0
+name = " "
 
 
 def save_it(frame):
@@ -80,25 +81,38 @@ def save_it(frame):
 	else:
 		main.destroy()
 
-def send_mail(smtp,msg):
+
+def send_mail(smtp, msg):
 	smtp.ehlo()
 	smtp.starttls()
 	smtp.ehlo()
-	smtp.login(cd.EMAIL_SENDER, cd.PASSWORD)
+	smtp.login(msg["From"], cd.PASSWORD)
 	smtp.send_message(msg)
 	smtp.quit()
 
-def make_screenshoot(img_counter,frame):
+
+def make_screenshoot(img_counter, frame):
 	localtime = time.strftime("%d_%m_%Y__%H_%M_%S", time.localtime())
 	img_name = "Snapshot_{}_".format(img_counter) + localtime + ".jpg"  # nazwanie naszego snapshota
-	# img_name = "Snapshot_{}.jpg".format(img_counter)
-	# print(img_name)
 	# format nie ma znaczenia - moze byc dowolny
 	cv2.imwrite(img_name, frame)  # zapisanie
 	print("{} written!".format(img_name))  # potwierdza że Snapshot został wykonany i zapisany
 	img_counter += 1  # licznik do nazwy
+	return img_counter, localtime
 
-name = " "
+
+def add_attachment(img_counter, localtime):
+	new_string = str(img_counter - 1) + "_" + str(localtime)
+	if img_counter > 0:
+		with open("Snapshot_{}.jpg".format(new_string), 'rb') as f:
+			file_data = f.read()
+			file_type = imghdr.what(f.name)
+			file_name = f.name
+		msg.add_attachment(file_data, maintype='image', subtype=file_type, filename=file_name)
+		return msg
+
+
+
 # loop over frames from the video file stream
 while True:
 	# grab the frame from the threaded video stream
@@ -123,26 +137,18 @@ while True:
 	k = cv2.waitKey(1)
 
 	if k % 256 == 32:  # jeżeli kliknięty klawisz to spacja
-			make_screenshoot(img_counter,frame)
+			img_counter, localtime = make_screenshoot(img_counter, frame)
 			save_it(frame)
-
-
 
 	if k % 256 == 27:
 		# dodanie załącznika
-		new_string = str(img_counter-1)+"_"+str(localtime)
-		if img_counter > 0:
-			with open("Snapshot_{}.jpg".format(new_string), 'rb') as f:
-				file_data = f.read()
-				file_type = imghdr.what(f.name)
-				file_name = f.name
-
-			msg.add_attachment(file_data, maintype='image', subtype=file_type, filename=file_name)
-
-			# wysyłanie wiaomości
-			# with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
+		msg = add_attachment(img_counter, localtime)
+		try:
 			with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-				send_mail(smtp,msg)
+				send_mail(smtp, msg)
+		except:
+			print("Mail nie został wysłany")
+
 
 	# loop over the detections
 	for i in range(0, detections.shape[2]):
@@ -216,33 +222,20 @@ while True:
 		if czy_rozpoznano == 0 :
 			print("Wysylam wiadomosc")
 			czas_od_wyslania = time.time()
-
-			make_screenshoot(img_counter, frame)
-			new_string = str(img_counter - 1) + "_" + str(localtime)
-			if img_counter > 0:
-				with open("Snapshot_{}.jpg".format(new_string), 'rb') as f:
-					file_data = f.read()
-					file_type = imghdr.what(f.name)
-					file_name = f.name
-
-				msg.add_attachment(file_data, maintype='image', subtype=file_type, filename=file_name)
-
-				# wysyłanie wiaomości
-				# with smtplib.SMTP('smtp.gmail.com', 465) as smtp:
-				try:
-					with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-						send_mail(smtp,msg)
-				except:
-					print("Mail nie został wysłany")
+			img_counter, localtime = make_screenshoot(img_counter, frame)
+			add_attachment(img_counter, localtime)
+			# wysyłanie wiaomości
+			try:
+				with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+					send_mail(smtp, msg)
+			except:
+				print("Mail nie został wysłany")
 	if time.time() - czas_od_wyslania > 100000:
 		czas_od_wyslania = 0;
 
 	# if the `q` key was pressed, break from the loop
 	if k == ord("q"):
 		break
-
-
-
 
 # stop the timer and display FPS information
 fps.stop()
